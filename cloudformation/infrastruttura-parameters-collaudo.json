@@ -35,6 +35,10 @@
     "ParameterKey": "NginxInstanceType",
     "ParameterValue": "t2.small"
   },
+      {
+    "ParameterKey": "SolrInstanceType",
+    "ParameterValue": "t2.small"
+  },
   {
     "ParameterKey": "KeyName",
     "ParameterValue": "opencontent-collaudo"
@@ -53,6 +57,14 @@
   },
   {
     "ParameterKey": "MaxSizeVarnish",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "MinSizeSolr",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "MaxSizeSolr",
     "ParameterValue": "1"
   }
 ]

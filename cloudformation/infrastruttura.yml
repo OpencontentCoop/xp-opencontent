@@ -84,6 +84,36 @@ Parameters:
     - c3.4xlarge
     - c3.8xlarge
     ConstraintDescription: must be a valid EC2 instance type.
+  SolrInstanceType:
+    Description: Nginx EC2 instance type
+    Type: String
+    Default: t2.small
+    AllowedValues:
+    - t2.nano
+    - t2.micro
+    - t2.small
+    - t2.medium
+    - t2.large
+    - m4.large
+    - m4.xlarge
+    - m4.2xlarge
+    - m4.4xlarge
+    - m4.10xlarge
+    - m3.medium
+    - m3.large
+    - m3.xlarge
+    - m3.2xlarge
+    - c4.large
+    - c4.xlarge
+    - c4.2xlarge
+    - c4.4xlarge
+    - c4.8xlarge
+    - c3.large
+    - c3.xlarge
+    - c3.2xlarge
+    - c3.4xlarge
+    - c3.8xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
   KeyName:
     Description: The EC2 Key Pair to allow SSH access to the instances
     Type: AWS::EC2::KeyPair::KeyName
@@ -95,6 +125,10 @@ Parameters:
   MinSizeVarnish:
     Type: Number
   MaxSizeVarnish:
+    Type: Number
+  MinSizeSolr:
+    Type: Number
+  MaxSizeSolr:
     Type: Number
 Mappings:
   AMI2RegionMap:
@@ -265,7 +299,7 @@ Resources:
         SourceSecurityGroupId:
           Ref: LoadBalancerNginxSecurityGroup
 
-
+###Varnish Group
   VarnishGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -388,6 +422,123 @@ Resources:
         ToPort: '443'
         SourceSecurityGroupId:
           Ref: LoadBalancerVarnishSecurityGroup
+
+#Solr group
+  SolrGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - "-"
+          - - Solr
+            - Ref: Project
+            - Ref: Environment
+        PropagateAtLaunch: 'true'
+      - Key: Environment
+        Value:
+          Ref: Environment
+        PropagateAtLaunch: 'true'
+      LaunchConfigurationName:
+        Ref: SolrLaunchConfig
+      MinSize: !Ref MinSizeSolr
+      MaxSize: !Ref MaxSizeSolr
+      LoadBalancerNames:
+      - Ref: SolrElasticLoadBalancer
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetA"
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
+  SolrLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      KeyName:
+        Ref: KeyName
+      ImageId:
+        Fn::FindInMap:
+        - AMI2RegionMap
+        - Ref: AWS::Region
+        - '64'
+      SecurityGroups:
+      - Ref: SolrSecurityGroup
+      - Ref: SSHSecurityGroup
+      InstanceType:
+        Ref: SolrInstanceType
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "#!/bin/bash -x\n"
+            - "echo ok >> /tmp/test-userdata \n"
+  LoadBalancerSolrSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP and HTTPS access
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-VPC-id"
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '8983'
+        ToPort: '8983'
+        SourceSecurityGroupId:
+          Ref: NginxSecurityGroup
+      Tags:
+      - Key: Project
+        Value:
+          Ref: Project
+      - Key: Environment
+        Value:
+          Ref: Environment
+  SolrElasticLoadBalancer:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - "-"
+          - - ELBSolr
+            - Ref: Project
+            - Ref: Environment
+      - Key: Environment
+        Value:
+          Ref: Environment
+      SecurityGroups:
+      - Ref: LoadBalancerSolrSecurityGroup
+      Subnets:
+        - Fn::ImportValue: !Sub ${VPCStackName}-PublicSubnetA
+        - Fn::ImportValue: !Sub ${VPCStackName}-PublicSubnetB
+      CrossZone: 'true'
+      Listeners:
+      - LoadBalancerPort: '8983'
+        InstancePort: '8983'
+        Protocol: TCP
+      HealthCheck:
+        Target: TCP:8983
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '5'
+        Interval: '30'
+        Timeout: '5'
+  SolrSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-VPC-id"
+      GroupDescription: Enable HTTP and HTTPS from the frontend load balancer only
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        SourceSecurityGroupId:
+          Ref: LoadBalancerSolrSecurityGroup
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        SourceSecurityGroupId:
+          Ref: LoadBalancerSolrSecurityGroup
+
   SSHSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
