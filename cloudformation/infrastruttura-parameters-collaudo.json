@@ -1,0 +1,58 @@
+[
+  {
+    "ParameterKey": "VPCStackName",
+    "ParameterValue": "vpc-collaudo"
+  },
+  {
+    "ParameterKey": "AccountName",
+    "ParameterValue": "xp-opencontent"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "collaudo"
+  },
+  {
+    "ParameterKey": "Owner",
+    "ParameterValue": "daniel"
+  },
+  {
+    "ParameterKey": "CentroCosti",
+    "ParameterValue": "xp-opencontent"
+  },
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "comunweb"
+  },
+  {
+    "ParameterKey": "XPeppersTrentoIp",
+    "ParameterValue": "79.6.56.100/32"
+  },
+  {
+    "ParameterKey": "VarnishInstanceType",
+    "ParameterValue": "t2.small"
+  },
+  {
+    "ParameterKey": "NginxInstanceType",
+    "ParameterValue": "t2.small"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "opencontent-collaudo"
+  },
+  {
+    "ParameterKey": "MinSizeNginx",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "MaxSizeNginx",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "MinSizeVarnish",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "MaxSizeVarnish",
+    "ParameterValue": "1"
+  }
+]
