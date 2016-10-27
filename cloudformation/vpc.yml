@@ -90,8 +90,7 @@ Resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Fn::ImportValue:
-          !Sub "${VPCStackName}-VPC-id"
+        Ref: VPC
       CidrBlock:
         Ref: PrivateSubnetCidrA
       AvailabilityZone:
@@ -479,19 +478,33 @@ Outputs:
       Name:
         !Sub "${AWS::StackName}-PublicSubnet"
   PublicSubnetA:
-    Description: SubnetId of publicA subnet
+    Description: SubnetId of PublicSubnetA subnet
     Value:
       Ref: PublicSubnetA
     Export:
       Name:
         !Sub "${AWS::StackName}-PublicSubnetA"
   PrivateSubnetA:
-    Description: SubnetId of privateA subnet
+    Description: SubnetId of PrivateSubnetA subnet
     Value:
       Ref: PrivateSubnetA
     Export:
       Name:
         !Sub "${AWS::StackName}-PrivateSubnetA"
+  PublicSubnetB:
+    Description: SubnetId of PublicSubnetB subnet
+    Value:
+      Ref: PublicSubnetB
+    Export:
+      Name:
+        !Sub "${AWS::StackName}-PublicSubnetB"
+  PrivateSubnetB:
+    Description: SubnetId of PrivateSubnetB subnet
+    Value:
+      Ref: PrivateSubnetB
+    Export:
+      Name:
+        !Sub "${AWS::StackName}-PrivateSubnetB"
   VpcCidr:
     Description: SubnetId of the VPN connected subnet
     Value:
