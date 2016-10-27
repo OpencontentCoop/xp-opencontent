@@ -175,6 +175,40 @@ Resources:
   #       Id: AutoscalingEventQueueID
   # AnsibleQueue:
   #   Type: AWS::SQS::Queue
+
+  NginxInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: NginxIAMRole
+  NginxIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: logs
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStreams
+            Resource:
+            - arn:aws:logs:*:*:*
+
   NginxGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -207,6 +241,7 @@ Resources:
   NginxLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
+      IamInstanceProfile: !Ref NginxInstanceProfile
       KeyName:
         Ref: KeyName
       ImageId:
