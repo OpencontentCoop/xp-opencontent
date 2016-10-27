@@ -1,0 +1,434 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Architecture
+Parameters:
+  VPCStackName:
+    Type: String
+  AccountName:
+    Type: String
+  Environment:
+    Type: String
+    AllowedValues:
+    - sviluppo
+    - produzione
+    - collaudo
+  Owner:
+    Type: String
+  CentroCosti:
+    Type: String
+  Project:
+    Type: String
+  XPeppersTrentoIp:
+    Type: String
+    Description: IP Address range for local infrastructure
+    MinLength: '9'
+    MaxLength: '18'
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+  VarnishInstanceType:
+    Description: Varnish EC2 instance type
+    Type: String
+    Default: t2.small
+    AllowedValues:
+    - t2.nano
+    - t2.micro
+    - t2.small
+    - t2.medium
+    - t2.large
+    - m4.large
+    - m4.xlarge
+    - m4.2xlarge
+    - m4.4xlarge
+    - m4.10xlarge
+    - m3.medium
+    - m3.large
+    - m3.xlarge
+    - m3.2xlarge
+    - c4.large
+    - c4.xlarge
+    - c4.2xlarge
+    - c4.4xlarge
+    - c4.8xlarge
+    - c3.large
+    - c3.xlarge
+    - c3.2xlarge
+    - c3.4xlarge
+    - c3.8xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  NginxInstanceType:
+    Description: Nginx EC2 instance type
+    Type: String
+    Default: t2.small
+    AllowedValues:
+    - t2.nano
+    - t2.micro
+    - t2.small
+    - t2.medium
+    - t2.large
+    - m4.large
+    - m4.xlarge
+    - m4.2xlarge
+    - m4.4xlarge
+    - m4.10xlarge
+    - m3.medium
+    - m3.large
+    - m3.xlarge
+    - m3.2xlarge
+    - c4.large
+    - c4.xlarge
+    - c4.2xlarge
+    - c4.4xlarge
+    - c4.8xlarge
+    - c3.large
+    - c3.xlarge
+    - c3.2xlarge
+    - c3.4xlarge
+    - c3.8xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  MinSizeNginx:
+    Type: Number
+  MaxSizeNginx:
+    Type: Number
+  MinSizeVarnish:
+    Type: Number
+  MaxSizeVarnish:
+    Type: Number
+Mappings:
+  AMI2RegionMap:
+    ap-northeast-1:
+      '64': ami-
+    ap-southeast-1:
+      '64': ami-
+    ap-southeast-2:
+      '64': ami-
+    eu-central-1:
+      '64': ami-
+    eu-west-1:
+      '64': ami-
+    sa-east-1:
+      '64': ami-
+    us-east-1:
+      '64': ami-2051294a
+    us-west-1:
+      '64': ami-
+    us-west-2:
+      '64': ami-
+Resources:
+  # AutoscalingEventQueue:
+  #   Type: AWS::Events::Rule
+  #   Properties:
+  #     Description: Event due to autoscaling change
+  #     EventPattern:
+  #       source:
+  #       - aws.autoscaling
+  #       detail-type:
+  #       - EC2 Instance Launch Successful
+  #     Name:
+  #       Fn::Join:
+  #       - "-"
+  #       - - AutoscalingEvent
+  #         - Ref: AccountName
+  #         - Ref: Environment
+  #     State: ENABLED
+  #     Targets:
+  #     - Arn:
+  #         Fn::GetAtt:
+  #         - AnsibleQueue
+  #         - Arn
+  #       Id: AutoscalingEventQueueID
+  # AnsibleQueue:
+  #   Type: AWS::SQS::Queue
+  NginxGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - "-"
+          - - Ngnix
+            - Ref: Project
+            - Ref: Environment
+        PropagateAtLaunch: 'true'
+      - Key: Environment
+        Value:
+          Ref: Environment
+        PropagateAtLaunch: 'true'
+      - Key: Project
+        Value:
+          Ref: Project
+        PropagateAtLaunch: 'true'
+      LaunchConfigurationName:
+        Ref: NginxLaunchConfig
+      MinSize: !Ref MinSizeNginx
+      MaxSize: !Ref MaxSizeNginx
+      LoadBalancerNames:
+      - Ref: NginxElasticLoadBalancer
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetA"
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
+  NginxLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      KeyName:
+        Ref: KeyName
+      ImageId:
+        Fn::FindInMap:
+        - AMI2RegionMap
+        - Ref: AWS::Region
+        - '64'
+      SecurityGroups:
+      - Ref: NginxSecurityGroup
+      - Ref: SSHSecurityGroup
+      InstanceType:
+        Ref: NginxInstanceType
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "#!/bin/bash -x\n"
+            - "echo ok >> /tmp/test-userdata \n"
+  LoadBalancerNginxSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP and HTTPS access
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-VPC-id"
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        SourceSecurityGroupId:
+          Ref: VarnishSecurityGroup
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        SourceSecurityGroupId:
+          Ref: VarnishSecurityGroup
+      Tags:
+      - Key: Project
+        Value:
+          Ref: Project
+      - Key: Environment
+        Value:
+          Ref: Environment
+  NginxElasticLoadBalancer:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - "-"
+          - - ELBNgnix
+            - Ref: Project
+            - Ref: Environment
+      - Key: Environment
+        Value:
+          Ref: Environment
+      SecurityGroups:
+      - Ref: LoadBalancerNginxSecurityGroup
+      Subnets:
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetA"
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
+      CrossZone: 'true'
+      Listeners:
+      - LoadBalancerPort: '80'
+        InstancePort: '80'
+        Protocol: HTTP
+      HealthCheck:
+        Target: HTTP:80/
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '5'
+        Interval: '30'
+        Timeout: '5'
+  NginxSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-VPC-id"
+      GroupDescription: Enable SSH access and HTTP from the load balancer only
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        SourceSecurityGroupId:
+          Ref: LoadBalancerNginxSecurityGroup
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        SourceSecurityGroupId:
+          Ref: LoadBalancerNginxSecurityGroup
+
+
+  VarnishGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - "-"
+          - - Varnish
+            - Ref: Project
+            - Ref: Environment
+        PropagateAtLaunch: 'true'
+      - Key: Environment
+        Value:
+          Ref: Environment
+        PropagateAtLaunch: 'true'
+      LaunchConfigurationName:
+        Ref: VarnishLaunchConfig
+      MinSize: !Ref MinSizeVarnish
+      MaxSize: !Ref MaxSizeVarnish
+      LoadBalancerNames:
+      - Ref: VarnishElasticLoadBalancer
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetA"
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
+  VarnishLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      KeyName:
+        Ref: KeyName
+      ImageId:
+        Fn::FindInMap:
+        - AMI2RegionMap
+        - Ref: AWS::Region
+        - '64'
+      SecurityGroups:
+      - Ref: VarnishSecurityGroup
+      - Ref: SSHSecurityGroup
+      InstanceType:
+        Ref: VarnishInstanceType
+      UserData:
+        Fn::Base64:
+          Fn::Join:
+          - ''
+          - - "#!/bin/bash -x\n"
+            - "echo ok >> /tmp/test-userdata \n"
+  LoadBalancerVarnishSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP and HTTPS access
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-VPC-id"
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Project
+        Value:
+          Ref: Project
+      - Key: Environment
+        Value:
+          Ref: Environment
+  VarnishElasticLoadBalancer:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - "-"
+          - - ELBVarnish
+            - Ref: Project
+            - Ref: Environment
+      - Key: Environment
+        Value:
+          Ref: Environment
+      SecurityGroups:
+      - Ref: LoadBalancerVarnishSecurityGroup
+      Subnets:
+        - Fn::ImportValue: !Sub ${VPCStackName}-PublicSubnetA
+        - Fn::ImportValue: !Sub ${VPCStackName}-PublicSubnetB
+        # Fn::ImportValue:
+        #   !Sub "${VPCStackName}-PublicSubnet"
+      CrossZone: 'true'
+      Listeners:
+      - LoadBalancerPort: '80'
+        InstancePort: '80'
+        Protocol: HTTP
+      - LoadBalancerPort: '443'
+        InstancePort: '443'
+        Protocol: HTTP
+      HealthCheck:
+        Target: HTTP:80/
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '5'
+        Interval: '30'
+        Timeout: '5'
+  VarnishSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-VPC-id"
+      GroupDescription: Enable HTTP and HTTPS from the frontend load balancer only
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        SourceSecurityGroupId:
+          Ref: LoadBalancerVarnishSecurityGroup
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        SourceSecurityGroupId:
+          Ref: LoadBalancerVarnishSecurityGroup
+  SSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-VPC-id"
+      GroupDescription: Enable SSH access and HTTP from the load balancer only
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp:
+          Ref: XPeppersTrentoIp
+Outputs:
+  LoadBalancerFrontEnd:
+    Description: DNS for Nginx frontend
+    Value:
+      Fn::Join:
+      - ''
+      - - https://
+        - Fn::GetAtt:
+          - NginxElasticLoadBalancer
+          - DNSName
+  LoadBalancerBackEnd:
+    Description: DNS of backend load balancer
+    Value:
+      Fn::Join:
+      - ''
+      - - https://
+        - Fn::GetAtt:
+          - VarnishElasticLoadBalancer
+          - DNSName
+  VarnishSecurityGroup:
+    Description: Security group for varnish vms
+    Value:
+      Fn::GetAtt:
+      - VarnishSecurityGroup
+      - GroupId
+  NginxSecurityGroup:
+    Description: Security group for nginx vms
+    Value:
+      Fn::GetAtt:
+      - NginxSecurityGroup
+      - GroupId

@@ -13,7 +13,7 @@
   },
   {
     "ParameterKey": "Owner",
-    "ParameterValue": "daniel"
+    "ParameterValue": ""
   },
   {
     "ParameterKey": "CentroCosti",
@@ -25,7 +25,7 @@
   },
   {
     "ParameterKey": "XPeppersTrentoIp",
-    "ParameterValue": "79.6.56.100/32"
+    "ParameterValue": ""
   },
   {
     "ParameterKey": "VarnishInstanceType",
