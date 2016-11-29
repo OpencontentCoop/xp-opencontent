@@ -219,7 +219,7 @@ Resources:
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
-  PrivateRouteTable:
+  PrivateRouteTableA:
     Type: AWS::EC2::RouteTable
     Properties:
       VpcId:
@@ -233,6 +233,22 @@ Resources:
             - Ref: Project
             - Ref: Environment
             - Private
+            - A
+  PrivateRouteTableB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - "-"
+          - - Ref: AccountName
+            - Ref: Project
+            - Ref: Environment
+            - Private
+            - B
   PublicRouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
@@ -253,14 +269,14 @@ Resources:
       SubnetId:
         Ref: PrivateSubnetA
       RouteTableId:
-        Ref: PrivateRouteTable
+        Ref: PrivateRouteTableA
   PrivateSubnetRouteTableAssociationB:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Ref: PrivateSubnetB
       RouteTableId:
-        Ref: PrivateRouteTable
+        Ref: PrivateRouteTableB
   PublicSubnetRouteTableAssociationA:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -275,15 +291,24 @@ Resources:
         Ref: PublicSubnetB
       RouteTableId:
         Ref: PublicRouteTable
-  PrivateRoute:
+  PrivateRouteA:
     Type: AWS::EC2::Route
     DependsOn: NATa
     Properties:
       RouteTableId:
-        Ref: PrivateRouteTable
+        Ref: PrivateRouteTableA
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId:
         Ref: NATa
+  PrivateRouteB:
+    Type: AWS::EC2::Route
+    DependsOn: NATb
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTableB
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: NATb
   PublicRoute:
     Type: AWS::EC2::Route
     DependsOn: InternetGateway
