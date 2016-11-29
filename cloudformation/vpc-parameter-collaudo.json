@@ -21,23 +21,23 @@
   },
   {
     "ParameterKey": "VpcCidr",
-    "ParameterValue": "172.100.0.0/24"
+    "ParameterValue": "172.16.0.0/24"
   },
   {
     "ParameterKey": "PrivateSubnetCidrA",
-    "ParameterValue": "172.100.0.0/26"
+    "ParameterValue": "172.16.0.0/26"
   },
   {
     "ParameterKey": "PrivateSubnetCidrB",
-    "ParameterValue": "172.100.0.64/26"
+    "ParameterValue": "172.16.0.64/26"
   },
   {
     "ParameterKey": "PublicSubnetCidrA",
-    "ParameterValue": "172.100.0.128/26"
+    "ParameterValue": "172.16.0.128/26"
   },
   {
     "ParameterKey": "PublicSubnetCidrB",
-    "ParameterValue": "172.100.0.192/26"
+    "ParameterValue": "172.16.0.192/26"
   },
   {
     "ParameterKey": "OnPremiseCidr",
