@@ -645,6 +645,12 @@ Resources:
         ToPort: '22'
         CidrIp:
           Ref: XPeppersTrentoIp
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp:
+          Fn::ImportValue:
+            !Sub "${VPCStackName}-VpcCidr"
 Outputs:
   LoadBalancerFrontEnd:
     Description: DNS for Nginx frontend
