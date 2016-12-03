@@ -217,6 +217,9 @@ Resources:
         Value:
           Ref: Project
         PropagateAtLaunch: 'true'
+      - Key: Role
+        Value: nginx
+        PropagateAtLaunch: 'true'
       LaunchConfigurationName:
         Ref: NginxLaunchConfig
       MinSize: !Ref MinSizeNginx
@@ -368,6 +371,9 @@ Resources:
           - - Varnish
             - Ref: Project
             - Ref: Environment
+        PropagateAtLaunch: 'true'
+      - Key: Role
+        Value: varnish
         PropagateAtLaunch: 'true'
       - Key: Environment
         Value:
@@ -531,6 +537,9 @@ Resources:
       - Key: Environment
         Value:
           Ref: Environment
+        PropagateAtLaunch: 'true'
+      - Key: Role
+        Value: solr
         PropagateAtLaunch: 'true'
       LaunchConfigurationName:
         Ref: SolrLaunchConfig
