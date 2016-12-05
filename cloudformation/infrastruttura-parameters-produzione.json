@@ -1,0 +1,74 @@
+[
+  {
+    "ParameterKey": "VPCStackName",
+    "ParameterValue": "vpc-comunweb-produzione"
+  },
+  {
+    "ParameterKey": "AccountName",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "produzione"
+  },
+  {
+    "ParameterKey": "Owner",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "CentroCosti",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "XPeppersTrentoIp",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "VarnishInstanceType",
+    "ParameterValue": "t2.small"
+  },
+  {
+    "ParameterKey": "NginxInstanceType",
+    "ParameterValue": "t2.small"
+  },
+  {
+    "ParameterKey": "SolrInstanceType",
+    "ParameterValue": "t2.small"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "MinSizeNginx",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "MaxSizeNginx",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "MinSizeVarnish",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "MaxSizeVarnish",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "MinSizeSolr",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "MaxSizeSolr",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "AssignPublicIP",
+    "ParameterValue": "false"
+  }
+]
