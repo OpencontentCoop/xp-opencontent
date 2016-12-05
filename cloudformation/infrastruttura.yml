@@ -132,6 +132,7 @@ Parameters:
     Type: Number
   AssignPublicIP:
     Type: String
+    Description: true or false to assign public IP to instances
     AllowedValues:
       - "true"
       - "false"
@@ -268,6 +269,12 @@ Resources:
   NginxElasticLoadBalancer:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
+      LoadBalancerName:
+        Fn::Join:
+        - "-"
+        - - ELBNgnix
+          - Ref: Project
+          - Ref: Environment
       Tags:
       - Key: Name
         Value:
@@ -429,6 +436,12 @@ Resources:
   VarnishElasticLoadBalancer:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
+      LoadBalancerName:
+        Fn::Join:
+        - "-"
+        - - ELBVarnish
+          - Ref: Project
+          - Ref: Environment
       Tags:
       - Key: Name
         Value:
@@ -592,6 +605,12 @@ Resources:
   SolrElasticLoadBalancer:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
+      LoadBalancerName:
+        Fn::Join:
+        - "-"
+        - - ELBSolr
+          - Ref: Project
+          - Ref: Environment
       Tags:
       - Key: Name
         Value:
