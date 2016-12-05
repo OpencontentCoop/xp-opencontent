@@ -66,5 +66,9 @@
   {
     "ParameterKey": "MaxSizeSolr",
     "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "AssignPublicIP",
+    "ParameterValue": "false"
   }
 ]

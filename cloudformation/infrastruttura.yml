@@ -130,6 +130,16 @@ Parameters:
     Type: Number
   MaxSizeSolr:
     Type: Number
+  AssignPublicIP:
+    Type: String
+    AllowedValues:
+      - "true"
+      - "false"
+Conditions: 
+  UsePrivateSubnet:
+    Fn::Equals:
+    - 'false'
+    - !Ref AssignPublicIP
 Mappings:
   AMI2RegionMap:
     eu-central-1:
@@ -137,31 +147,6 @@ Mappings:
     eu-west-1:
       '64': ami-7abd0209
 Resources:
-  # AutoscalingEventQueue:
-  #   Type: AWS::Events::Rule
-  #   Properties:
-  #     Description: Event due to autoscaling change
-  #     EventPattern:
-  #       source:
-  #       - aws.autoscaling
-  #       detail-type:
-  #       - EC2 Instance Launch Successful
-  #     Name:
-  #       Fn::Join:
-  #       - "-"
-  #       - - AutoscalingEvent
-  #         - Ref: AccountName
-  #         - Ref: Environment
-  #     State: ENABLED
-  #     Targets:
-  #     - Arn:
-  #         Fn::GetAtt:
-  #         - AnsibleQueue
-  #         - Arn
-  #       Id: AutoscalingEventQueueID
-  # AnsibleQueue:
-  #   Type: AWS::SQS::Queue
-
 #############
 ###NGINX#####
 #############
@@ -227,8 +212,12 @@ Resources:
       LoadBalancerNames:
       - Ref: NginxElasticLoadBalancer
       VPCZoneIdentifier:
-        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetA"
-        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
+        !If
+          - UsePrivateSubnet
+          - - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetA"
+            - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetB"
+          - - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
+            - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
   NginxLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
@@ -386,8 +375,12 @@ Resources:
       LoadBalancerNames:
       - Ref: VarnishElasticLoadBalancer
       VPCZoneIdentifier:
-        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetA"
-        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
+        !If
+          - UsePrivateSubnet
+          - - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetA"
+            - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetB"
+          - - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
+            - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
   VarnishLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
@@ -548,8 +541,12 @@ Resources:
       LoadBalancerNames:
       - Ref: SolrElasticLoadBalancer
       VPCZoneIdentifier:
-        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetA"
-        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
+        !If
+          - UsePrivateSubnet
+          - - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetA"
+            - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetB"
+          - - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
+            - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
   SolrLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
