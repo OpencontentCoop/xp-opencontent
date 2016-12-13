@@ -70,5 +70,9 @@
   {
     "ParameterKey": "AssignPublicIP",
     "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "AnsiblePublicKey",
+    "ParameterValue": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCYoN1pPsOI7o8u0KwShNGTKHWBNqp3mRmB+0Qn+/FnU86aYlGO+EKKu0ldwAOzJmqsLN/ysfRXcxCEZ+bAO6mmgGzjnPunHUR0HZKPBOJr3yhlVymcyI8vUWj2gJIkhpbXgsbUCzoiuzmITk7iFFjrMAEcsC7aQZm5HCr5Vnlt3mNatygGAe/GCsAgNDvi3Iikxe1ksNtsFiETy14bdOfu3Ihh2KEuTg0uyrTNLYDD58KZUwZoDndFGShZka2YjEcvT0GS3L+L4vkN2CNc+khuVX/lunsthCFglW5TjtiHTIHNoNfdtr70dyBPjT7uySTkI5PkRPXc/UIKOdO1jjLz bastion"
   }
 ]

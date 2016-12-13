@@ -136,6 +136,9 @@ Parameters:
     AllowedValues:
       - "true"
       - "false"
+  AnsiblePublicKey:
+    Type: String
+    Description: Public key to authorized for ansible server
 Conditions: 
   UsePrivateSubnet:
     Fn::Equals:
@@ -253,10 +256,12 @@ Resources:
         Ref: NginxInstanceType
       UserData:
         Fn::Base64:
-          Fn::Join:
-          - ''
-          - - "#!/bin/bash -x\n"
-            - "echo ok >> /tmp/test-userdata \n"
+          !Sub |
+            #!/bin/bash -x
+            mkdir /home/centos/.ssh
+            echo "${AnsiblePublicKey}" >> /home/centos/.ssh/authorized_keys
+            chown -R centos:centos /home/centos/.ssh
+            chmod 600 /home/centos/.ssh/authorized_keys
   LoadBalancerNginxSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -422,10 +427,12 @@ Resources:
         Ref: VarnishInstanceType
       UserData:
         Fn::Base64:
-          Fn::Join:
-          - ''
-          - - "#!/bin/bash -x\n"
-            - "echo ok >> /tmp/test-userdata \n"
+          !Sub |
+            #!/bin/bash -x
+            mkdir /home/centos/.ssh
+            echo "${AnsiblePublicKey}" >> /home/centos/.ssh/authorized_keys
+            chown -R centos:centos /home/centos/.ssh
+            chmod 600 /home/centos/.ssh/authorized_keys
   LoadBalancerVarnishSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -594,10 +601,12 @@ Resources:
         Ref: SolrInstanceType
       UserData:
         Fn::Base64:
-          Fn::Join:
-          - ''
-          - - "#!/bin/bash -x\n"
-            - "echo ok >> /tmp/test-userdata \n"
+          !Sub |
+            #!/bin/bash -x
+            mkdir /home/centos/.ssh
+            echo "${AnsiblePublicKey}" >> /home/centos/.ssh/authorized_keys
+            chown -R centos:centos /home/centos/.ssh
+            chmod 600 /home/centos/.ssh/authorized_keys
   LoadBalancerSolrSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
