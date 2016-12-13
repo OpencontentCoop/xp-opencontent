@@ -1,0 +1,42 @@
+[
+  {
+    "ParameterKey": "VPCStackName",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "AccountName",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "collaudo"
+  },
+  {
+    "ParameterKey": "Owner",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "CentroCosti",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": ""
+  },
+  {
+    "ParameterKey": "PrimaryIP",
+    "ParameterValue": "0.0.0.0/0"
+  },
+  {
+    "ParameterKey": "SecondaryIP",
+    "ParameterValue": "0.0.0.0/0"
+  },
+  {
+    "ParameterKey": "BastionHostInstanceType",
+    "ParameterValue": "t2.micro"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": ""
+  }
+]

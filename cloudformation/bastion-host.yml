@@ -1,0 +1,188 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Bastion Host in an autoscaling group 1:1
+Parameters:
+  VPCStackName:
+    Type: String
+  AccountName:
+    Type: String
+  Environment:
+    Type: String
+    AllowedValues:
+    - produzione
+    - collaudo
+    - test
+    - sviluppo
+  Owner:
+    Type: String
+  CentroCosti:
+    Type: String
+  Project:
+    Type: String
+  PrimaryIP:
+    Type: String
+    Description: IP Address range for local infrastructure
+    MinLength: '9'
+    MaxLength: '18'
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+  SecondaryIP:
+    Type: String
+    Description: IP Address range for local infrastructure
+    MinLength: '8'
+    MaxLength: '18'
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+  BastionHostInstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+    - t2.nano
+    - t2.micro
+    - t2.small
+    - t2.medium
+    - t2.large
+    - m4.large
+    - m4.xlarge
+    - m4.2xlarge
+    - m4.4xlarge
+    - m4.10xlarge
+    - m3.medium
+    - m3.large
+    - m3.xlarge
+    - m3.2xlarge
+    - c4.large
+    - c4.xlarge
+    - c4.2xlarge
+    - c4.4xlarge
+    - c4.8xlarge
+    - c3.large
+    - c3.xlarge
+    - c3.2xlarge
+    - c3.4xlarge
+    - c3.8xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+Mappings:
+  AMI2RegionMap:
+    eu-west-1:
+      '64': ami-1c4a046f
+Resources:
+
+###BastionHost Group
+  BastionHostInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: BastionHostIAMRole
+  BastionHostIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: logs
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStreams
+            Resource:
+            - arn:aws:logs:*:*:*
+  BastionHostGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - "-"
+          - - BastionHost
+            - Ref: Project
+            - Ref: Environment
+        PropagateAtLaunch: 'true'
+      - Key: Environment
+        Value:
+          Ref: Environment
+        PropagateAtLaunch: 'true'
+      LaunchConfigurationName:
+        Ref: BastionHostLaunchConfig
+      MinSize: 1
+      MaxSize: 1
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetA"
+  BastionHostLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      IamInstanceProfile: !Ref BastionHostInstanceProfile
+      KeyName:
+        Ref: KeyName
+      ImageId:
+        Fn::FindInMap:
+        - AMI2RegionMap
+        - Ref: AWS::Region
+        - '64'
+      SecurityGroups:
+      - Ref: BastionHostSecurityGroup
+      - Ref: SSHSecurityGroup
+      InstanceType:
+        Ref: BastionHostInstanceType
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -x
+            echo All is
+            echo ok
+  BastionHostSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-VPC-id"
+      GroupDescription: Enable HTTP and HTTPS
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '80'
+        ToPort: '80'
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: '443'
+        ToPort: '443'
+        CidrIp: 0.0.0.0/0
+
+  SSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-VPC-id"
+      GroupDescription: Enable SSH access and HTTP from the load balancer only
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp:
+          Ref: PrimaryIP
+          Ref: SecondaryIP
+Outputs:
+  BastionHostSecurityGroup:
+    Description: Security group for BastionHost VM
+    Value:
+      Fn::GetAtt:
+      - BastionHostSecurityGroup
+      - GroupId
