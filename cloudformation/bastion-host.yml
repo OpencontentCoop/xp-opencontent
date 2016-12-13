@@ -122,6 +122,32 @@ Resources:
             - logs:DescribeLogStreams
             Resource:
             - arn:aws:logs:*:*:*
+      - PolicyName: codecommit
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - codecommit:*
+            Resource:
+            - "*"
+          - Effect: Allow
+            Action:
+              - iam:GenerateCredentialReport
+              - iam:GenerateServiceLastAccessedDetails
+              - iam:Get*
+              - iam:List*
+            Resource:
+            - arn:aws:iam::*:user/test.user
+      - PolicyName: EC2Read
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - ec2:Describe*
+            Resource:
+            - "*"
   BastionHostGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
@@ -164,8 +190,13 @@ Resources:
         Fn::Base64:
           !Sub |
             #!/bin/bash -x
-            echo All is
-            echo ok
+            rpm -iUvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+            rpm -Uvh http://www.city-fan.org/ftp/contrib/yum-repo/rhel6/x86_64/city-fan.org-release-1-13.rhel6.noarch.rpm
+            yum -y update
+            yum -y install git python-pip awscli libcurl
+            yum install -y gcc libffi-devel python-devel openssl-devel
+            pip install --upgrade pip
+            pip install ansible
   BastionHostSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
