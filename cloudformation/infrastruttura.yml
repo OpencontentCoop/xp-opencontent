@@ -344,7 +344,9 @@ Resources:
       - IpProtocol: tcp
         FromPort: '2049'
         ToPort: '2049'
-        CidrIp: !Sub "${VPCStackName}-VpcCidr"
+        CidrIp:
+          Fn::ImportValue:
+            !Sub "${VPCStackName}-VpcCidr"
 
 #############
 ###VARNISH###
