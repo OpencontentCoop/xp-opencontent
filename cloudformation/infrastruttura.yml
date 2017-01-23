@@ -341,6 +341,10 @@ Resources:
         ToPort: '443'
         SourceSecurityGroupId:
           Ref: LoadBalancerNginxSecurityGroup
+      - IpProtocol: tcp
+        FromPort: '2049'
+        ToPort: '2049'
+        CidrIp: !Sub "${VPCStackName}-VpcCidr"
 
 #############
 ###VARNISH###
