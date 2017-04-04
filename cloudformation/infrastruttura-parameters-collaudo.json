@@ -25,7 +25,7 @@
   },
   {
     "ParameterKey": "XPeppersTrentoIp",
-    "ParameterValue": ""
+    "ParameterValue": "0.0.0.0/0"
   },
   {
     "ParameterKey": "VarnishInstanceType",
@@ -41,7 +41,7 @@
   },
   {
     "ParameterKey": "KeyName",
-    "ParameterValue": "opencontent-collaudo"
+    "ParameterValue": "comunweb_aws_luca"
   },
   {
     "ParameterKey": "MinSizeNginx",
@@ -69,10 +69,10 @@
   },
   {
     "ParameterKey": "AssignPublicIP",
-    "ParameterValue": "false"
+    "ParameterValue": "true"
   },
   {
     "ParameterKey": "AnsiblePublicKey",
-    "ParameterValue": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCYoN1pPsOI7o8u0KwShNGTKHWBNqp3mRmB+0Qn+/FnU86aYlGO+EKKu0ldwAOzJmqsLN/ysfRXcxCEZ+bAO6mmgGzjnPunHUR0HZKPBOJr3yhlVymcyI8vUWj2gJIkhpbXgsbUCzoiuzmITk7iFFjrMAEcsC7aQZm5HCr5Vnlt3mNatygGAe/GCsAgNDvi3Iikxe1ksNtsFiETy14bdOfu3Ihh2KEuTg0uyrTNLYDD58KZUwZoDndFGShZka2YjEcvT0GS3L+L4vkN2CNc+khuVX/lunsthCFglW5TjtiHTIHNoNfdtr70dyBPjT7uySTkI5PkRPXc/UIKOdO1jjLz bastion"
+    "ParameterValue": "ssh-rsa MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgJoJ444EhlTdCWKD207YJNHNWRvzcy5oUV+ux7IbX+wPT5gxoRQ1gVOCa+lYfOMzo9B1VlSXebifYynAZV61nVkT0XDaA4lgcej0WDUcTPQqdIdDiCW4xskhn+QXWsI1r2zuS3y0+bUJF5X6QuO6B+IOfZtYRVt5oVr3rSz3XqZMs/Emp21ZOE1D2F4LrBVdgDHFwPbgeYL+v37FBZHNY05O2x7qMrZj/YNXUrVSC2Nop8vCqR/Rx9B/vKMxm76UJO+w0hYuHUFuRkbGSm5RPSvxStM/qqUqvhb5of3ns4AU+FrTx2zC5kDdRjV4eGxnd9CfQuGCCvZOBAugmqF0JwIDAQAB developer@opencontent.it"
   }
 ]

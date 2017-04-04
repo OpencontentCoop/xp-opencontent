@@ -1,27 +1,27 @@
 [
   {
     "ParameterKey": "VPCStackName",
-    "ParameterValue": ""
+    "ParameterValue": "vpc-produzione"
   },
   {
     "ParameterKey": "AccountName",
-    "ParameterValue": ""
+    "ParameterValue": "opencontent"
   },
   {
     "ParameterKey": "Environment",
-    "ParameterValue": "collaudo"
+    "ParameterValue": "produzione"
   },
   {
     "ParameterKey": "Owner",
-    "ParameterValue": ""
+    "ParameterValue": "opencontent"
   },
   {
     "ParameterKey": "CentroCosti",
-    "ParameterValue": ""
+    "ParameterValue": "comunweb"
   },
   {
     "ParameterKey": "Project",
-    "ParameterValue": ""
+    "ParameterValue": "comunweb_aws"
   },
   {
     "ParameterKey": "PrimaryIP",

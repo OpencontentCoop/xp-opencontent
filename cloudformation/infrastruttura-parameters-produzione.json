@@ -1,11 +1,11 @@
 [
   {
     "ParameterKey": "VPCStackName",
-    "ParameterValue": "vpc-comunweb-produzione"
+    "ParameterValue": "vpc-produzione"
   },
   {
     "ParameterKey": "AccountName",
-    "ParameterValue": ""
+    "ParameterValue": "opencontent"
   },
   {
     "ParameterKey": "Environment",
@@ -13,35 +13,35 @@
   },
   {
     "ParameterKey": "Owner",
-    "ParameterValue": ""
+    "ParameterValue": "opencontent"
   },
   {
     "ParameterKey": "CentroCosti",
-    "ParameterValue": ""
+    "ParameterValue": "comunweb"
   },
   {
     "ParameterKey": "Project",
-    "ParameterValue": ""
+    "ParameterValue": "comunweb"
   },
   {
     "ParameterKey": "XPeppersTrentoIp",
-    "ParameterValue": ""
+    "ParameterValue": "79.3.202.40/32"
   },
   {
     "ParameterKey": "VarnishInstanceType",
-    "ParameterValue": "t2.small"
+    "ParameterValue": "t2.micro"
   },
   {
     "ParameterKey": "NginxInstanceType",
-    "ParameterValue": "t2.small"
+    "ParameterValue": "t2.micro"
   },
   {
     "ParameterKey": "SolrInstanceType",
-    "ParameterValue": "t2.small"
+    "ParameterValue": "t2.micro"
   },
   {
     "ParameterKey": "KeyName",
-    "ParameterValue": ""
+    "ParameterValue": "comunweb_aws"
   },
   {
     "ParameterKey": "MinSizeNginx",
@@ -70,5 +70,9 @@
   {
     "ParameterKey": "AssignPublicIP",
     "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "AnsiblePublicKey",
+    "ParameterValue": "ssh-rsa MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAodPC9vnO1n1s8pLvf8MzZFU/s6RFCEsQyHnDI0oWzlJUF/AGdgFMNhz7DE+4JBpgfh1G+xWFmNVuY7CiHrYanKEcSLSOtklbtwJ7SCd7rA1VoxskNouJ7co/ci51+FmfZXXIOk+WojNjLJObVYnzpN4gTRGaxpyd34iBrj5Uqv+OTVt142joGcAsJG07QZQynhpnA71B2QK93dzt2RCJWnEy5hgtblr0r/BL+rny1S+OmXE+qG8ARxN2abeQExDGrqtctMiMUwkOBDBOnrDfgQohfP0b1MhFQCjRabOvJ7uew7ppZ5eJYFPbCTrk1WvSDX1JprzQ6a8SYc1Z+ImRGQIDAQAB developer@opencontent.it"
   }
 ]
