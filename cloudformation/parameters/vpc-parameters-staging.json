@@ -5,15 +5,15 @@
   },
   {
     "ParameterKey": "Environment",
-    "ParameterValue": "collaudo"
+    "ParameterValue": "staging"
   },
   {
     "ParameterKey": "Owner",
-    "ParameterValue": ""
+    "ParameterValue": "opencontent"
   },
   {
     "ParameterKey": "CentroCosti",
-    "ParameterValue": "xp-opencontent"
+    "ParameterValue": "opencontent"
   },
   {
     "ParameterKey": "Project",
