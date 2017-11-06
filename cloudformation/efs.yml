@@ -1,0 +1,82 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Static resources'
+Parameters:
+
+#Common parameters
+  AccountName:
+    Type: String
+  Owner:
+    Type: String
+  CentroCosti:
+    Type: String
+  Project:
+    Type: String
+  Environment:
+    Type: String
+    AllowedValues:
+    - test
+    - sviluppo
+    - collaudo
+    - produzione
+    - developing
+    - production
+    - staging
+  VPCStackName:
+    Type: String
+
+Resources:
+  ElasticFileSystem:
+    Type: "AWS::EFS::FileSystem"
+    DeletionPolicy: Retain
+    Properties:
+      FileSystemTags:
+        -
+          Key: "Name"
+          Value:
+            Fn::Join:
+              - "-"
+              - - !Ref Project
+                - nfs
+                - !Ref Environment
+  MountTargetA:
+    Type: "AWS::EFS::MountTarget"
+    DeletionPolicy: Retain
+    Properties:
+      FileSystemId: !Ref ElasticFileSystem
+      SubnetId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-PrivateSubnetA"
+      SecurityGroups:
+        - !Ref ElasticFileSystemSecurityGroup
+  MountTargetB:
+    Type: "AWS::EFS::MountTarget"
+    DeletionPolicy: Retain
+    Properties:
+      FileSystemId: !Ref ElasticFileSystem
+      SubnetId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-PrivateSubnetB"
+      SecurityGroups:
+        - !Ref ElasticFileSystemSecurityGroup
+  ElasticFileSystemSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DeletionPolicy: Retain
+    Properties:
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-VPC-id"
+      GroupDescription: Security group for elastic file system
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: '2049'
+        ToPort: '2049'
+        CidrIp:
+          Fn::ImportValue:
+            !Sub "${VPCStackName}-VpcCidr"
+      - IpProtocol: tcp
+        FromPort: '2049'
+        ToPort: '2049'
+        CidrIp:
+          Fn::ImportValue:
+            !Sub "${VPCStackName}-VpcCidr"
