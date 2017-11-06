@@ -78,11 +78,17 @@ Parameters:
   HostedZoneName:
     Type: String
     Default: opencontent.biz.
+  ALBcertificateARN:
+    Type: String
+    Description: Certificate arn to associate with Php Load Balancer
+    Default: ''
 Conditions: 
   UsePrivateSubnet:
     Fn::Equals:
     - 'false'
     - !Ref AssignPublicIP
+  UseHTTPS:
+    !Not [!Equals [!Ref ALBcertificateARN, '']]
 Mappings:
   AMI2RegionMap:
     us-east-1:
@@ -164,8 +170,8 @@ Resources:
         Ref: VarnishLaunchConfig
       MinSize: !Ref MinSizeVarnish
       MaxSize: !Ref MaxSizeVarnish
-      LoadBalancerNames:
-      - Ref: VarnishElasticLoadBalancer
+      TargetGroupARNs:
+      - !Ref TargetGroupMain
       VPCZoneIdentifier:
         !If
           - UsePrivateSubnet
@@ -220,47 +226,76 @@ Resources:
       - Key: Environment
         Value:
           Ref: Environment
-  VarnishElasticLoadBalancer:
-    Type: AWS::ElasticLoadBalancing::LoadBalancer
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      LoadBalancerName:
+      Name:
         Fn::Join:
-        - "-"
-        - - varnish
-          - Ref: Project
-          - Ref: Environment
-      Tags:
-      - Key: Name
-        Value:
-          Fn::Join:
           - "-"
-          - - ELBVarnish
-            - Ref: Project
-            - Ref: Environment
+          - - !Ref Project
+            - varnish
+            - !Ref Environment
+      Tags:
       - Key: Environment
         Value:
-          Ref: Environment
+          !Ref Environment
       SecurityGroups:
-      - Ref: LoadBalancerVarnishSecurityGroup
+      - !Ref LoadBalancerVarnishSecurityGroup
       Subnets:
-        - Fn::ImportValue: !Sub ${VPCStackName}-PublicSubnetA
-        - Fn::ImportValue: !Sub ${VPCStackName}-PublicSubnetB
-        # Fn::ImportValue:
-        #   !Sub "${VPCStackName}-PublicSubnet"
-      CrossZone: 'true'
-      Listeners:
-      - LoadBalancerPort: '80'
-        InstancePort: '80'
-        Protocol: HTTP
-      - LoadBalancerPort: '443'
-        InstancePort: '443'
-        Protocol: HTTP
-      HealthCheck:
-        Target: HTTP:80/
-        HealthyThreshold: '3'
-        UnhealthyThreshold: '5'
-        Interval: '30'
-        Timeout: '5'
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetA"
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
+  TargetGroupMain:
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    Properties:
+      HealthyThresholdCount: 5
+      UnhealthyThresholdCount: 5
+      HealthCheckTimeoutSeconds: 5
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      Matcher:
+        HttpCode: 200-398
+      Port: 80
+      Protocol: HTTP
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-VPC-id"
+      Name:
+          Fn::Join:
+            - "-"
+            - - varnish
+              - !Ref Project
+              - !Ref Environment
+              - TG
+      Tags:
+        - Key: Environment
+          Value:
+            !Ref Environment
+        - Key: Project
+          Value:
+            !Ref Project
+  ListenersHTTPS:
+    Condition: UseHTTPS
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Certificates:
+        - CertificateArn: !Ref ALBcertificateARN
+      Port: '443'
+      Protocol: HTTPS
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupMain
+  ListenersHTTP:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref ApplicationLoadBalancer
+      Port: '80'
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupMain
+
   VarnishSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -298,25 +333,6 @@ Resources:
         CidrIp:
           Fn::ImportValue:
             !Sub "${VPCStackName}-VpcCidr"
-  SSHSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      VpcId:
-        Fn::ImportValue:
-          !Sub "${VPCStackName}-VPC-id"
-      GroupDescription: Enable SSH access and HTTP from the load balancer only
-      SecurityGroupIngress:
-      - IpProtocol: tcp
-        FromPort: '22'
-        ToPort: '22'
-        CidrIp:
-          Ref: XPeppersTrentoIp
-      - IpProtocol: tcp
-        FromPort: '22'
-        ToPort: '22'
-        CidrIp:
-          Fn::ImportValue:
-            !Sub "${VPCStackName}-VpcCidr"
 
   RecordSetUI:
     Type: AWS::Route53::RecordSet
@@ -332,9 +348,9 @@ Resources:
       AliasTarget:
         DNSName:
           Fn::GetAtt:
-            - VarnishElasticLoadBalancer
+            - ApplicationLoadBalancer
             - DNSName
         HostedZoneId:
           Fn::GetAtt:
-            - VarnishElasticLoadBalancer
-            - CanonicalHostedZoneNameID
+            - ApplicationLoadBalancer
+            - CanonicalHostedZoneID
