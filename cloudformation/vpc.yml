@@ -11,6 +11,9 @@ Parameters:
     - sviluppo
     - produzione
     - collaudo
+    - staging
+    - developing
+    - production
   Owner:
     Type: String
   CentroCosti:
