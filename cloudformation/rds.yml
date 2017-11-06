@@ -1,0 +1,156 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description:  RDS postgres
+Parameters:
+  VPCStackName:
+    Type: String
+  AccountName:
+    Type: String
+  Environment:
+    Type: String
+    AllowedValues:
+    - test
+    - sviluppo
+    - produzione
+    - collaudo
+    - staging
+    - developing
+    - production
+  Owner:
+    Type: String
+  CentroCosti:
+    Type: String
+  Project:
+    Type: String
+  XPeppersTrentoIp:
+    Type: String
+    Description: IP Address range for local infrastructure
+    MinLength: '9'
+    MaxLength: '18'
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+  HostedZoneName:
+    Type: String
+  RDSSnapshotName:
+    Description: Name of the RDS snapshot from which create RDS
+    Type: String
+  RDSServerInstanceType:
+    Description: The instance type of database server (e.g. db.t2.micro).
+    Type: String
+    Default: db.t2.small
+  RDSUsername:
+    Description: RDS db username.
+    Type: String
+  RDSPassword:
+    NoEcho: true
+    Description: RDS db password.
+    Type: String
+  RDSIdentifier:
+    Description: RDS db id.
+    Type: String
+  RDSAllocatedStorage:
+    Description: RDS AllocatedStorage size, specified in gigabytes (GB).
+    Type: String
+  RDSMultiAZ:
+    Description: 'Use MultiAZ for RDS'
+    Type: String
+    AllowedValues:
+    - 'true'
+    - 'false'
+    Default: 'false'
+  RDSPubliclyAccessible:
+    Description: 'Enable public access'
+    Type: String
+    AllowedValues:
+    - 'true'
+    - 'false'
+    Default: 'false'
+  RDSBackupRetentionPeriod:
+    Description: The number of days during which automatic DB snapshots are retained.
+    Type: String
+  RDSEngine:
+    Type: String
+  RDSEngineVersion:
+    Type: String
+
+Resources:
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription:
+        !Join
+          - "-"
+          - - Ref: Project
+            - Ref: Environment
+            - RDSSecurityGroup
+      VpcId:
+        Fn::ImportValue: !Sub "${VPCStackName}-VPC-id"
+      SecurityGroupIngress:
+      - IpProtocol: 'tcp'
+        FromPort: '3306'      
+        ToPort: '3306'
+        CidrIp:
+          Fn::ImportValue:
+            !Sub "${VPCStackName}-VpcCidr"
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: DB subnet group
+      SubnetIds:
+        - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetA"
+        - Fn::ImportValue: !Sub "${VPCStackName}-PrivateSubnetB"
+  Database:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      #DBSnapshotIdentifier: !Ref RDSSnapshotName
+      PubliclyAccessible:
+        !Ref RDSPubliclyAccessible
+      AllocatedStorage:
+        !Ref RDSAllocatedStorage
+      BackupRetentionPeriod:
+        !Ref RDSBackupRetentionPeriod
+      DBInstanceClass:
+        !Ref RDSServerInstanceType
+      DBInstanceIdentifier:
+        !Ref RDSIdentifier
+      Engine: !Ref RDSEngine
+      EngineVersion: !Ref RDSEngineVersion
+      MasterUsername:
+        !Ref RDSUsername
+      MasterUserPassword:
+        !Ref RDSPassword
+      VPCSecurityGroups:
+      - Fn::GetAtt:
+        - DatabaseSecurityGroup
+        - GroupId
+      DBSubnetGroupName:
+        !Ref DBSubnetGroup
+      MultiAZ: !Ref RDSMultiAZ
+      StorageType: gp2
+      Tags:
+      - Key: Name
+        Value: !Ref RDSIdentifier
+      - Key: Project
+        Value: !Ref Project
+      - Key: Environment
+        Value: !Ref Environment
+      - Key: CentroCosti
+        Value: !Ref CentroCosti
+###DNS Records
+  RecordSetRDS:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneName: !Ref HostedZoneName
+      RecordSets:
+      - Name:
+          !Join
+            - "."
+            - - db
+              - !Ref Environment
+              - !Ref HostedZoneName
+        Type: CNAME
+        TTL: '60'
+        ResourceRecords:
+        - !GetAtt Database.Endpoint.Address
+Outputs:
+  RDS:
+    Value:
+      !GetAtt Database.Endpoint.Address
