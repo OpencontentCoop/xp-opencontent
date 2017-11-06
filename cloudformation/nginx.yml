@@ -78,6 +78,9 @@ Parameters:
   NginxAMI:
     Type: String
     Description: AMI for Nginx instance
+  HostedZoneName:
+    Type: String
+    Default: opencontent.biz.
 Conditions: 
   UsePrivateSubnet:
     Fn::Equals:
@@ -303,3 +306,24 @@ Resources:
         CidrIp:
           Fn::ImportValue:
             !Sub "${VPCStackName}-VpcCidr"
+
+  RecordSetUI:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Ref HostedZoneName
+      Name:
+        !Join
+          - "."
+          - - app
+            - !Ref Environment
+            - !Ref HostedZoneName
+      Type: A
+      AliasTarget:
+        DNSName:
+          Fn::GetAtt:
+            - NginxElasticLoadBalancer
+            - DNSName
+        HostedZoneId:
+          Fn::GetAtt:
+            - NginxElasticLoadBalancer
+            - CanonicalHostedZoneNameID

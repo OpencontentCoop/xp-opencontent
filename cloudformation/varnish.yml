@@ -75,6 +75,9 @@ Parameters:
   AnsiblePublicKey:
     Type: String
     Description: Public key to authorized for ansible server
+  HostedZoneName:
+    Type: String
+    Default: opencontent.biz.
 Conditions: 
   UsePrivateSubnet:
     Fn::Equals:
@@ -314,3 +317,24 @@ Resources:
         CidrIp:
           Fn::ImportValue:
             !Sub "${VPCStackName}-VpcCidr"
+
+  RecordSetUI:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Ref HostedZoneName
+      Name:
+        !Join
+          - "."
+          - - varnish
+            - !Ref Environment
+            - !Ref HostedZoneName
+      Type: A
+      AliasTarget:
+        DNSName:
+          Fn::GetAtt:
+            - VarnishElasticLoadBalancer
+            - DNSName
+        HostedZoneId:
+          Fn::GetAtt:
+            - VarnishElasticLoadBalancer
+            - CanonicalHostedZoneNameID
