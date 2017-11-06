@@ -1,0 +1,54 @@
+[
+  {
+    "ParameterKey": "VPCStackName",
+    "ParameterValue": "comunweb-staging-vpc"
+  },
+  {
+    "ParameterKey": "AccountName",
+    "ParameterValue": "xp-opencontent"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "staging"
+  },
+  {
+    "ParameterKey": "Owner",
+    "ParameterValue": "opencontent"
+  },
+  {
+    "ParameterKey": "CentroCosti",
+    "ParameterValue": "opencontent"
+  },
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "comunweb"
+  },
+  {
+    "ParameterKey": "XPeppersTrentoIp",
+    "ParameterValue": "0.0.0.0/0"
+  },
+  {
+    "ParameterKey": "SolrInstanceType",
+    "ParameterValue": "t2.medium"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "EU-XPeppers-collaudo"
+  },
+  {
+    "ParameterKey": "MinSizeSolr",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "MaxSizeSolr",
+    "ParameterValue": "1"
+  },
+  {
+    "ParameterKey": "AssignPublicIP",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "AnsiblePublicKey",
+    "ParameterValue": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCYoN1pPsOI7o8u0KwShNGTKHWBNqp3mRmB+0Qn+/FnU86aYlGO+EKKu0ldwAOzJmqsLN/ysfRXcxCEZ+bAO6mmgGzjnPunHUR0HZKPBOJr3yhlVymcyI8vUWj2gJIkhpbXgsbUCzoiuzmITk7iFFjrMAEcsC7aQZm5HCr5Vnlt3mNatygGAe/GCsAgNDvi3Iikxe1ksNtsFiETy14bdOfu3Ihh2KEuTg0uyrTNLYDD58KZUwZoDndFGShZka2YjEcvT0GS3L+L4vkN2CNc+khuVX/lunsthCFglW5TjtiHTIHNoNfdtr70dyBPjT7uySTkI5PkRPXc/UIKOdO1jjLz bastion"
+  }
+]
