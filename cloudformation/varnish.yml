@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Architecture
+Description: Varnish Layer
 Parameters:
   VPCStackName:
     Type: String
