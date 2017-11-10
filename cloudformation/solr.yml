@@ -206,8 +206,8 @@ Resources:
           !Sub "${VPCStackName}-VPC-id"
       SecurityGroupIngress:
       - IpProtocol: tcp
-        FromPort: '8983'
-        ToPort: '8983'
+        FromPort: '8999'
+        ToPort: '8999'
         CidrIp:
           Fn::ImportValue:
             !Sub "${VPCStackName}-VpcCidr"
@@ -245,11 +245,11 @@ Resources:
         - Fn::ImportValue: !Sub ${VPCStackName}-PublicSubnetB
       CrossZone: 'true'
       Listeners:
-      - LoadBalancerPort: '8983'
-        InstancePort: '8983'
+      - LoadBalancerPort: '8999'
+        InstancePort: '8999'
         Protocol: TCP
       HealthCheck:
-        Target: TCP:8983
+        Target: TCP:8999
         HealthyThreshold: '3'
         UnhealthyThreshold: '5'
         Interval: '30'
