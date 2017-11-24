@@ -1,0 +1,82 @@
+[
+  {
+    "ParameterKey": "AccountName",
+    "ParameterValue": "xp-opencontent"
+  },
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "production"
+  },
+  {
+    "ParameterKey": "Owner",
+    "ParameterValue": "xp-opencontent"
+  },
+  {
+    "ParameterKey": "CentroCosti",
+    "ParameterValue": "xp-opencontent"
+  },
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "comunweb"
+  },
+  {
+    "ParameterKey": "VpcCidr",
+    "ParameterValue": "10.240.0.0/24"
+  },
+  {
+    "ParameterKey": "PrivateSubnetCidrA",
+    "ParameterValue": "10.240.0.0/26"
+  },
+  {
+    "ParameterKey": "PrivateSubnetCidrB",
+    "ParameterValue": "10.240.0.64/26"
+  },
+  {
+    "ParameterKey": "PublicSubnetCidrA",
+    "ParameterValue": "10.240.0.128/26"
+  },
+  {
+    "ParameterKey": "PublicSubnetCidrB",
+    "ParameterValue": "10.240.0.192/26"
+  },
+  {
+    "ParameterKey": "OnPremiseCidr",
+    "ParameterValue": "10.10.10.10/32"
+  },
+  {
+    "ParameterKey": "IpCustomerGateway",
+    "ParameterValue": "10.10.10.10"
+  },
+  {
+    "ParameterKey": "VPNConnectionEnabled",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "UseNat",
+    "ParameterValue": "true"
+  },
+  {
+    "ParameterKey": "MultiAZNat",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "PeeringEnabled",
+    "ParameterValue": "false"
+  },
+  {
+    "ParameterKey": "PeeredAccountId",
+    "ParameterValue": "999999999999"
+  },
+  {
+    "ParameterKey": "PeeredVPCId",
+    "ParameterValue": "vpc-d1111111"
+  },
+  {
+    "ParameterKey": "PeeredTargetCIDR",
+    "ParameterValue": "172.31.0.0/16"
+  },
+  {
+    "ParameterKey": "PeeringCrossAccountRoleARN",
+    "ParameterValue": "arn:aws:iam::999999999999:role/PeeringRoleCreation-peerRole"
+  }
+]
