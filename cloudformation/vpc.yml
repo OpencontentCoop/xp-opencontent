@@ -1,18 +1,13 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: VPC With Public and Private Subnet
+Description: VPC With Public and Private Subnet (VPN and Peering optional)
 Parameters:
   AccountName:
     Type: String
   Environment:
     Type: String
     AllowedValues:
-    - test
-    - sviluppo
-    - produzione
-    - collaudo
     - staging
-    - developing
     - production
   Owner:
     Type: String
@@ -62,17 +57,61 @@ Parameters:
     MinLength: '9'
     MaxLength: '15'
     AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})"
+  PeeredVPCId:
+    Type: String
+    Description: VPC Id external to peer
+  PeeredAccountId:
+    Type: String
+    Description: Account Id external to peer
+  PeeringCrossAccountRoleARN:
+    Type: String
+    Description: Role ARN for cross account acceptance peering
+  PeeredTargetCIDR:
+    Type: String
+    Description: IP Address range for the peered network
+    MinLength: '9'
+    MaxLength: '18'
+    AllowedPattern: "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
   VPNConnectionEnabled:
     Type: String
     Default: 'false'
     AllowedValues:
     - 'true'
     - 'false'
+  PeeringEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+    - 'true'
+    - 'false'
+  MultiAZNat:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+    - 'true'
+    - 'false'
+  UseNat:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+    - 'true'
+    - 'false'
 Conditions:
+  CreatePeering:
+    Fn::Equals:
+    - Ref: PeeringEnabled
+    - 'true'
   CreateVPNConnection:
     Fn::Equals:
     - Ref: VPNConnectionEnabled
     - 'true'
+  InstallNatA:
+    Fn::Equals:
+    - !Ref UseNat
+    - 'true'
+  InstallNatB: !And
+    - !Equals ["true", !Ref MultiAZNat]
+    - !Equals ["true", !Ref UseNat]
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -196,6 +235,7 @@ Resources:
         Ref: InternetGateway
   NATa:
     DependsOn: InternetGatewayAttachment
+    Condition: InstallNatA
     Type: AWS::EC2::NatGateway
     Properties:
       AllocationId:
@@ -205,6 +245,7 @@ Resources:
       SubnetId:
         Ref: PublicSubnetA
   NATb:
+    Condition: InstallNatB
     DependsOn: InternetGatewayAttachment
     Type: AWS::EC2::NatGateway
     Properties:
@@ -215,10 +256,12 @@ Resources:
       SubnetId:
         Ref: PublicSubnetB
   EIPa:
+    Condition: InstallNatA
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
   EIPb:
+    Condition: InstallNatB
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
@@ -295,6 +338,7 @@ Resources:
       RouteTableId:
         Ref: PublicRouteTable
   PrivateRouteA:
+    Condition: InstallNatA
     Type: AWS::EC2::Route
     DependsOn: NATa
     Properties:
@@ -304,14 +348,17 @@ Resources:
       NatGatewayId:
         Ref: NATa
   PrivateRouteB:
+    Condition: InstallNatA
     Type: AWS::EC2::Route
-    DependsOn: NATb
     Properties:
       RouteTableId:
         Ref: PrivateRouteTableB
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId:
-        Ref: NATb
+        !If
+          - InstallNatB
+          - !Ref NATb
+          - !Ref NATa
   PublicRoute:
     Type: AWS::EC2::Route
     DependsOn: InternetGateway
@@ -494,6 +541,57 @@ Resources:
         Ref: VPNConnection
       DestinationCidrBlock:
         Ref: OnPremiseCidr
+  VPCPeeringConnection:
+    Type: AWS::EC2::VPCPeeringConnection
+    Condition: CreatePeering
+    Properties:
+      VpcId:
+        Ref: VPC
+      PeerVpcId:
+        Ref: PeeredVPCId
+      PeerOwnerId:
+        Ref: PeeredAccountId
+      PeerRoleArn:
+        Ref: PeeringCrossAccountRoleARN
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - "-"
+          - - Ref: AccountName
+            - Ref: Project
+            - Ref: Environment
+            - peering
+  PeeringRoutePublic:
+    Type: AWS::EC2::Route
+    Condition: CreatePeering
+    Properties:
+      DestinationCidrBlock:
+        Ref: PeeredTargetCIDR
+      RouteTableId:
+        Ref: PublicRouteTable
+      VpcPeeringConnectionId:
+        Ref: VPCPeeringConnection
+  PeeringRoutePrivateA:
+    Type: AWS::EC2::Route
+    Condition: CreatePeering
+    Properties:
+      DestinationCidrBlock:
+        Ref: PeeredTargetCIDR
+      RouteTableId:
+        Ref: PrivateRouteTableA
+      VpcPeeringConnectionId:
+        Ref: VPCPeeringConnection
+  PeeringRoutePrivateB:
+    Type: AWS::EC2::Route
+    Condition: CreatePeering
+    Properties:
+      DestinationCidrBlock:
+        Ref: PeeredTargetCIDR
+      RouteTableId:
+        Ref: PrivateRouteTableB
+      VpcPeeringConnectionId:
+        Ref: VPCPeeringConnection
 Outputs:
   VPCId:
     Description: VPCId of the newly created VPC
