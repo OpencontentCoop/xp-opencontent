@@ -1,0 +1,46 @@
+[
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "production"
+  },
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "comunweb"
+  },
+  {
+    "ParameterKey": "AccountName",
+    "ParameterValue": "xp-opencontent"
+  },
+  {
+    "ParameterKey": "Owner",
+    "ParameterValue": "xp-opencontent"
+  },
+  {
+    "ParameterKey": "CostCenter",
+    "ParameterValue": "xp-opencontent"
+  },
+  {
+    "ParameterKey": "ImageId",
+    "ParameterValue": "ami-0ef64777"
+  },
+  {
+    "ParameterKey": "InstanceName",
+    "ParameterValue": "redirect-comunweb-production"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t2.micro"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "EU-XPeppers-produzione"
+  },
+  {
+    "ParameterKey": "ReservedEIP",
+    "ParameterValue": "52.209.151.66"
+  },
+  {
+    "ParameterKey": "VPCStackName",
+    "ParameterValue": "comunweb-production-vpc"
+  }
+]

@@ -1,0 +1,167 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Nginx redirect instance
+Parameters:
+  Project:
+    Type: String
+  AccountName:
+    Type: String
+  Environment:
+    Type: String
+    AllowedValues:
+    - development
+    - testing
+    - staging
+    - production
+    - sviluppo
+    - collaudo
+    - pre-produzione
+    - produzione
+  Owner:
+    Type: String
+  CostCenter:
+    Type: String
+  ImageId:
+    Type: String
+  InstanceName:
+    Type: String
+  InstanceType:
+    Description: EC2 instance type
+    Type: String
+    AllowedValues:
+    - t2.nano
+    - t2.micro
+    - t2.small
+    ConstraintDescription: must be a valid EC2 instance type.
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  ReservedEIP:
+    Type: String
+    Description: IP of the preallocated EIP
+  VPCStackName:
+    Type: String
+    Description: Name of the VPC stack
+Resources:
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: IAMRole
+  IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: associateEIP
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - ec2:AssociateAddress
+            - ec2:Describe*
+            Resource: "*"
+      - PolicyName: CodeCommit
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - codecommit:BatchGetRepositories
+            - codecommit:Get*
+            - codecommit:GitPull
+            - codecommit:List*
+            - codecommit:Test*
+            Resource:
+            - '*'
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - "-"
+          - - Ref: Project
+            - Ref: Environment
+            - Ref: InstanceName
+        PropagateAtLaunch: 'true'
+      - Key: CostCenter
+        Value: !Ref CostCenter
+        PropagateAtLaunch: 'true'
+      - Key: Project
+        Value: !Ref Project
+        PropagateAtLaunch: 'true'
+      - Key: Environment
+        Value: !Ref Environment
+        PropagateAtLaunch: 'true'
+      LaunchConfigurationName:
+        Ref: LaunchConfiguration
+      MinSize: 1
+      MaxSize: 1
+      VPCZoneIdentifier:
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetA"
+        - Fn::ImportValue: !Sub "${VPCStackName}-PublicSubnetB"
+  LaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      IamInstanceProfile: !Ref InstanceProfile
+      KeyName: !Ref KeyName
+      ImageId: !Ref ImageId
+      SecurityGroups:
+      - Ref: SSHSecurityGroup
+      InstanceType:
+        Ref: InstanceType
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -x
+            aws-ec2-assign-elastic-ip --valid-ips ${ReservedEIP}
+  SSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-VPC-id"
+      GroupDescription: Enable SSH access
+      SecurityGroupIngress:
+      - IpProtocol: "tcp"
+        FromPort: "22"
+        ToPort: "22"
+        CidrIp: 93.149.246.23/32
+        Description: "XPeppers Roma"
+      - IpProtocol: "tcp"
+        FromPort: "22"
+        ToPort: "22"
+        CidrIp: 79.6.56.100/32
+        Description: "XPeppers Trento"
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VPCStackName}-VPC-id"
+      GroupDescription: Enable SSH access
+      SecurityGroupIngress:
+      - IpProtocol: "tcp"
+        FromPort: "80"
+        ToPort: "80"
+        CidrIp: 0.0.0.0/0
+        Description: "Porta 80 per tutti"
+      - IpProtocol: "tcp"
+        FromPort: "443"
+        ToPort: "443"
+        CidrIp: 0.0.0.0/0
+        Description: "Porta 443 per tutti"
